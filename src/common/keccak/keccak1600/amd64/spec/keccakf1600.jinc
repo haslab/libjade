@@ -1,5 +1,33 @@
+param int KECCAK_ROUNDS=24;
 
-require "keccakf1600_globals.jinc"
+inline fn KECCAK1600_RC_spec() -> stack u64[24] {
+  stack u64[24] rc;
+  rc[0] = 0x0000000000000001;
+  rc[1] = 0x0000000000008082;
+  rc[2] = 0x800000000000808a;
+  rc[3] = 0x8000000080008000;
+  rc[4] = 0x000000000000808b;
+  rc[5] = 0x0000000080000001;
+  rc[6] = 0x8000000080008081;
+  rc[7] = 0x8000000000008009;
+  rc[8] = 0x000000000000008a;
+  rc[9] = 0x0000000000000088;
+  rc[10] = 0x0000000080008009;
+  rc[11] = 0x000000008000000a;
+  rc[12] = 0x000000008000808b;
+  rc[13] = 0x800000000000008b;
+  rc[14] = 0x8000000000008089;
+  rc[15] = 0x8000000000008003;
+  rc[16] = 0x8000000000008002;
+  rc[17] = 0x8000000000000080;
+  rc[18] = 0x000000000000800a;
+  rc[19] = 0x800000008000000a;
+  rc[20] = 0x8000000080008081;
+  rc[21] = 0x8000000000008080;
+  rc[22] = 0x0000000080000001;
+  rc[23] = 0x8000000080008008;
+  return rc;
+}
 
 inline fn __index_spec(inline int x y) -> inline int
 {
@@ -149,7 +177,7 @@ inline fn __keccakf1600_spec(stack u64[25] state) -> stack u64[25]
   reg u64 round RC;
   reg ptr u64[24] kRCp;
 
-  kRCp = KECCAK1600_RC;
+  kRCp = KECCAK1600_RC_spec();
   round = 0;
   while(round < 24)
   {

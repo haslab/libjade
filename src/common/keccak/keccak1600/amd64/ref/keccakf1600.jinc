@@ -1,5 +1,5 @@
-from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates_spec
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
 
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
 inline fn __theta_sum_ref(stack u64[25] a) -> reg u64[5]

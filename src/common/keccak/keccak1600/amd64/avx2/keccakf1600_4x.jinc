@@ -1,7 +1,4 @@
-
-from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates_spec
-
-param int KECCAK_ROUNDS=24;
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // KECCAK_ROUNDS, __rhotates_spec
 
 u256[24] KECCAK1600_RC_4x = {
   (4u64)[0x0000000000000001, 0x0000000000000001, 0x0000000000000001, 0x0000000000000001],
@@ -52,21 +49,42 @@ inline fn __theta_sum_4x_avx2(reg ptr u256[25] a) -> reg u256[5]
   return c;
 }
 
-inline fn __rol_4x_avx2(reg u256[5] a, inline int x r, reg u256 r8 r56) -> reg u256[5]
+inline fn __rol_4x_avx2_alt(reg u256[5] a, inline int x r, reg u256 r8 r56) -> reg u256[5]
 {
-	reg u256 t;
+  reg u256 t;
 
-  if(r == 8)
-  {	a[x] = #VPSHUFB_256(a[x], r8); }
-  else { if(r == 56)
-  { a[x] = #VPSHUFB_256(a[x], r56); }
-  else
-  { t     = #VPSLL_4u64(a[x], r);
-	  a[x]  = #VPSRL_4u64(a[x], 64 - r);
-	  a[x] |= t; }
+  if(r == 8) {
+    a[x] = #VPSHUFB_256(a[x], r8);
+  } else { 
+    if(r == 56) { 
+      a[x] = #VPSHUFB_256(a[x], r56);
+    } else {
+      t = #VPSLL_4u64(a[x], r);
+      a[x]  = #VPSRL_4u64(a[x], 64 - r);
+      a[x] |= t; }
   }
 
-	return a; 
+  return a; 
+}
+
+inline fn __rol_4x_avx2(reg u256 x, inline int r, reg u256 r8 r56) -> reg u256
+{
+  reg u256 t;
+
+  if(r != 0) {
+    if(r == 8) {
+      x = #VPSHUFB_256(x, r8);
+    } else { 
+      if(r == 56) { 
+	x = #VPSHUFB_256(x, r56);
+      } else {
+	t = #VPSLL_4u64(x, r);
+	x = #VPSRL_4u64(x, 64 - r);
+	x |= t; }
+    }
+  }
+
+  return x; 
 }
 
 // D[x] = C[x-1] ^ ROT(C[x+1], 1) 
@@ -80,7 +98,7 @@ inline fn __theta_rol_4x_avx2(reg u256[5] c, reg u256 r8 r56) -> reg u256[5]
     d[x] = c[(x + 1) % 5];
 
     // D[x] = ROT(D[x], 1)
-    d = __rol_4x_avx2(d, x, 1, r8, r56);
+    d[x] = __rol_4x_avx2(d[x], 1, r8, r56);
 
     // D[x] ^= C[x-1]
     d[x] ^= c[(x - 1 + 5) % 5];
@@ -118,8 +136,7 @@ inline fn __rol_sum_4x_avx2(
     b[x] ^= d[x_];
 
     // B[x] = ROT( B[x], r[x',y'] );
-    if(r != 0)
-    { b = __rol_4x_avx2(b, x, r, r8, r56); }
+    b[x] = __rol_4x_avx2(b[x], r, r8, r56);
   }
 
   return b;
@@ -186,7 +203,7 @@ inline fn __keccakf1600_4x_avx2(reg ptr u256[25] a) -> reg ptr u256[25]
   r56 = ROL56;
 
   c = 0;
-  while
+  while (c < (KECCAK_ROUNDS*32))
   {
     rc = RC.[(int) c];
     e = __round_4x_avx2(e, a, rc, r8, r56);
@@ -195,7 +212,7 @@ inline fn __keccakf1600_4x_avx2(reg ptr u256[25] a) -> reg ptr u256[25]
     a = __round_4x_avx2(a, e, rc, r8, r56);
 
     c += 64;
-  } (c < (KECCAK_ROUNDS*32))
+  } 
 
   return a;
 }
@@ -215,4 +232,5 @@ inline fn _keccakf1600_4x_avx2_(reg ptr u256[25] a) -> reg ptr u256[25]
   a = a;
   return a;
 }
+
 

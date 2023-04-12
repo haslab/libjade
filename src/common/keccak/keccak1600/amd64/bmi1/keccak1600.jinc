@@ -102,7 +102,7 @@ inline fn __absorb_bmi1(
     s_inlen = inlen; 
     s_rate = rate;
 
-    state = _keccakf1600_bmi1(state);
+    state = _keccakf1600_ref1(state);
 
     in = s_in;
     inlen = s_inlen;
@@ -190,7 +190,7 @@ inline fn __squeeze_bmi1(
     s_outlen = outlen;
     s_rate = rate;
 
-    state = _keccakf1600_bmi1(state);
+    state = _keccakf1600_ref1(state);
 
     out = s_out;
     outlen = s_outlen;
@@ -202,7 +202,7 @@ inline fn __squeeze_bmi1(
 
   s_outlen = outlen;
 
-  state = _keccakf1600_bmi1(state);
+  state = _keccakf1600_ref1(state);
 
   out = s_out;
   outlen = s_outlen;
