@@ -8,7 +8,7 @@ inline fn __shake128_bmi1(reg u64 out outlen in inlen)
   trail_byte = 0x1F;
   rate = (1344/8);
 
-  __keccak1600_bmi1(out, outlen, in, inlen, trail_byte, rate);
+  __keccak1600_ref1(out, outlen, in, inlen, trail_byte, rate);
 }
 
 
