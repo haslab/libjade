@@ -1,0 +1,3 @@
+from Jade require "common/keccak/keccak1600/amd64/spec/keccak1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/ref/keccak1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/bmi1/keccak1600.jinc"
