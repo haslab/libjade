@@ -1,6 +1,17 @@
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates_spec
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
 
+
+
+inline fn __rol_u64_ref( reg u64 x, inline int i) -> reg u64 {
+  if (i != 0) {
+    _, _, x = #ROL_64(x, i);
+  }
+  return x;
+}
+
+
+
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
 inline fn __theta_sum_ref(stack u64[25] a) -> reg u64[5]
 {
@@ -32,7 +43,7 @@ inline fn __theta_rol_ref(reg u64[5] c) -> reg u64[5]
     d[x] = c[(x + 1) % 5];
 
     // D[x] = ROT(D[x], 1)
-    _, _, d[x] = #ROL_64(d[x], 1);
+    d[x] = __rol_u64_ref(d[x], 1);
 
     // D[x] ^= C[x-1]
     d[x] ^= c[(x - 1 + 5) % 5];
@@ -69,8 +80,7 @@ inline fn __rol_sum_ref(
     b[x] ^= d[x_];
 
     // B[x] = ROT( B[x], r[x',y'] );
-    if(r != 0)
-    { _, _, b[x] = #ROL_64(b[x], r); }
+    b[x] = __rol_u64_ref(b[x], r);
 
   }
 
@@ -127,19 +137,16 @@ inline fn __round_ref(stack u64[25] a, reg u64 rc) -> stack u64[25]
 
 inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
 {
-  reg ptr u64[24] RC;
   stack u64[25] e;
   reg u64 c rc;
-
-  RC = KECCAK1600_RC;
 
   c = 0;
   while
   {
-    rc = RC[(int) c];
+    rc = KECCAK1600_RC[(int) c];
     e = __round_ref(a, rc);
 
-    rc = RC[(int) c + 1];
+    rc = KECCAK1600_RC[(int) c + 1];
     a = __round_ref(e, rc);
 
     c += 2;

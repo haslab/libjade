@@ -4,12 +4,15 @@ from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc"
 /* This file expects to be "required" after defining the function '__ANDN_64', itself defined in either 'common/keccak/keccak1600/amd64/ref1/andn_no_bmi1.jinc' or 'common/keccak/keccak1600/amd64/bmi1/andn_bmi1.jinc'
 */
 
-inline fn __rol_u64( reg u64 x, inline int i) -> reg u64 {
+
+
+inline fn __rol_u64_ref1( reg u64 x, inline int i) -> reg u64 {
   if (i != 0) {
     _, _, x = #ROL_64(x, i);
   }
   return x;
 }
+
 
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
 inline fn __theta_sum_ref1(reg ptr u64[25] a) -> reg u64[5]
@@ -41,7 +44,7 @@ inline fn __theta_rol_ref1(reg u64[5] c) -> reg u64[5]
     d[x] = c[(x + 1) % 5];
 
     // D[x] = ROT(D[x], 1)
-    d[x] = __rol_u64(d[x], 1);
+    d[x] = __rol_u64_ref1(d[x], 1);
 
     // D[x] ^= C[x-1]
     d[x] ^= c[(x - 1 + 5) % 5];
@@ -77,7 +80,7 @@ inline fn __rol_sum_ref1(
     b[x] ^= d[x_];
 
     // B[x] = ROT( B[x], r[x',y'] );
-    b[x] = __rol_u64(b[x], r);
+    b[x] = __rol_u64_ref1(b[x], r);
 
   }
 
@@ -144,7 +147,7 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
   e = s_e;
 
   c = 0;
-  while (c < KECCAK_ROUNDS)
+  while
   {
     s_c = c;
 
@@ -160,7 +163,7 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
 
     c = s_c;
     c += 2;
-  } 
+  } (c < KECCAK_ROUNDS - 1)
 
   return a;
 }
