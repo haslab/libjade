@@ -141,7 +141,7 @@ inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
   reg u64 c rc;
 
   c = 0;
-  while
+  while 
   {
     rc = KECCAK1600_RC[(int) c];
     e = __round_ref(a, rc);
