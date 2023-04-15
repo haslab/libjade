@@ -223,7 +223,7 @@ inline fn __absorb_avx2(
   while ( inlen >= rate )
   {
     state, s_state, in, inlen = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate);
-    state = __keccakf1600_avx2(state);
+    state = _keccakf1600_avx2_(state);
   }
 
   // final block
@@ -242,12 +242,12 @@ inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate)
   // intermediate blocks
   while ( outlen > rate )
   {
-    state = __keccakf1600_avx2(state);
+    state = _keccakf1600_avx2_(state);
     out = __xtr_full_block_avx2(state, a_jagged_p, out, rate);
     outlen -= rate;
   }
 
-  state = __keccakf1600_avx2(state);
+  state = _keccakf1600_avx2_(state);
   out = __xtr_bytes_avx2(state, a_jagged_p, out, outlen);
 }
 

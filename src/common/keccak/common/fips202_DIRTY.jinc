@@ -20,7 +20,7 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
   t = SHA3_256_RATE;
   state = __absorb_avx2(state, in, inlen, trail_byte, t);
 
-  state = __keccakf1600_avx2(state);
+  state = _keccakf1600_avx2_(state);
 
   for i=0 to 7 { s_state[u256 i] = state[i]; }
   
@@ -70,7 +70,7 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
   
-  state = __keccakf1600_avx2(state);
+  state = _keccakf1600_avx2_(state);
 
   for i=0 to 7 { s_state[u256 i] = state[i]; }
 
@@ -164,7 +164,7 @@ fn _ishake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[1
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
 
-  state = __keccakf1600_avx2(state);
+  state = _keccakf1600_avx2_(state);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
@@ -213,7 +213,7 @@ fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
   
-  state = __keccakf1600_avx2(state);
+  state = _keccakf1600_avx2_(state);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
@@ -262,7 +262,7 @@ fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
   
-  state = __keccakf1600_avx2(state);
+  state = _keccakf1600_avx2_(state);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
@@ -331,7 +331,7 @@ fn __shake128_squeezeblock(reg u256[7] state, reg ptr u8[SHAKE128_RATE] out) -> 
   reg u64 t l;
   inline int i;
 
-  state = __keccakf1600_avx2(state);
+  state = _keccakf1600_avx2_(state);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
