@@ -2,6 +2,264 @@ param int KECCAK_ROUNDS=24;
 
 require "keccakf1600.jinc"
 
+
+
+// INVERSE PERMUTATION as a function
+inline
+fn __INV_P(inline int i) -> inline int {
+ inline int x;
+ if (i < 4) {
+   x = i+1;
+ } else if (i == 4) {
+   x = 10;
+ } else if (i == 5) {
+   x = 20;
+ } else if (i == 6) {
+   x = 5;
+ } else if (i == 7) {
+   x = 15;
+ } else if (i == 8) {
+   x = 16;
+ } else if (i == 9) {
+   x = 7;
+ } else if (i == 10) {
+   x = 23;
+ } else if (i == 11) {
+   x = 14;
+ } else if (i == 12) {
+   x = 11;
+ } else if (i == 13) {
+   x = 22;
+ } else if (i == 14) {
+   x = 8;
+ } else if (i == 15) {
+   x = 19;
+ } else if (i == 16) {
+   x = 21;
+ } else if (i == 17) {
+   x = 17;
+ } else if (i == 18) {
+   x = 13;
+ } else if (i == 19) {
+   x = 9;
+ } else if (i == 20) {
+   x = 6;
+ } else if (i == 21) {
+   x = 12;
+ } else if (i == 22) {
+   x = 18;
+ } else {
+   x = 24;
+ }
+
+ return x;
+}
+
+
+
+inline
+fn __u64_into_u128(reg u64 x, inline int pos) -> reg u128{
+  reg u128 r;
+  if (pos==0) { // static test
+    r = (128u) x;
+  } else {
+    r = #set0_128();
+    r = #VPINSR_2u64(r, x, 1);
+  }
+  return r;
+}
+
+inline
+fn __u128_into_u256(reg u128 x, inline int pos) -> reg u256 {
+  reg u256 r;
+  if (pos==0) { // static test
+    r = (256u) x;
+  } else {
+    r = #set0_256();
+    r = #VINSERTI128(r, x, 1);
+  }
+  return r;
+}
+
+inline
+fn __u64_into_u256(reg u64 x, inline int pos) -> reg u256 {
+  reg u256 r;
+  reg u128 t;
+  t = __u64_into_u128(x, pos%2);
+  r = __u128_into_u256(t, pos/2);
+  return r;
+}
+
+
+
+inline
+fn __u64x2_u128(reg u64 x0 x1) -> reg u128 {
+  reg u128 y;
+  y = (128u) x0;
+  y = #VPINSR_2u64(y, x1, 1);
+  return y;
+}
+
+inline
+fn __u64x4_u256(reg u64 x0 x1 x2 x3) -> reg u256 {
+  reg u128 h l;
+  reg u256 y;
+  l = __u64x2_u128(x0, x1);
+  h = __u64x2_u128(x2, x3);
+  y = (2u128)[h, l];
+  return y;
+}
+
+inline
+fn __u128x2_u256(reg u128 x0 x1) -> reg u256 {
+  reg u256 y;
+  //y = (256u) x0;
+  //y = #VINSERTI128(y, x1, 1);
+  y = (2u128)[x1, x0];
+  return y;
+}
+
+
+inline
+fn __read_u64_u256(reg u64 in) -> reg u64, reg u256 {
+ reg u64 x;
+ reg u256 y;
+ x = [in];
+ y = #VMOVDQU_256((u256)[in+8]);
+ return x, y;
+}
+
+inline
+fn __read_u64xmm_u256(reg u64 in) -> reg u128, reg u256 {
+ reg u128 x;
+ reg u256 y;
+ x = #MOVD([in]);
+ y = #VMOVDQU_256((u256)[in+8]);
+ return x, y;
+}
+
+
+inline /* pre: len < 8 */
+fn __read_isub_u64(reg u64 in, inline int len) -> reg u64 {
+  reg u64 x t;
+  inline int sh off;
+  sh = 0;
+  off = 0;
+  x = 0;
+  if (len >= 4) {
+    x = (64u) (u32)[in + off];
+    off +=4;
+    len -= 4;
+    sh += 32;
+  }
+  if (len >= 2) {
+    t = (64u) (u16)[in + off];
+    t <<= sh;
+    x |= t;
+    off += 2;
+    len -= 2;
+    sh += 16;
+  }
+  if (len >= 1) {
+    t = (64u) (u8)[in + off];
+    t <<= sh;
+    x |= t;
+  }
+  return x;
+}
+
+/*
+export fn ti0(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 0); return x;}
+export fn ti1(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 1); return x;}
+export fn ti2(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 2); return x;}
+export fn ti3(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 3); return x;}
+export fn ti4(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 4); return x;}
+export fn ti5(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 5); return x;}
+export fn ti6(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 6); return x;}
+export fn ti7(reg u64 in) -> reg u64 {reg u64 x; x = __read_isub_u64(in, 7); return x;}
+*/
+
+inline /* pre: len < 8 */
+fn __read_sub_u64_trail(reg u64 in len, inline int trailbyte) -> reg u64 {
+  reg u64 x t trail;
+  reg u8 sh;
+  trail = trailbyte;
+  sh = 0;
+  x = 0;
+  if (len >= 4) {
+    x = (64u) (u32)[in];
+    in +=4;
+    len -= 4;
+    sh += 32;
+    trail <<= 32;
+  }
+  if (len >= 2) {
+    t = (64u) (u16)[in];
+    t <<= sh;
+    x |= t;
+    in += 2;
+    len -= 2;
+    sh += 16;
+    trail <<= 16;
+  }
+  if (len >= 1) {
+    t = (64u) (u8)[in];
+    t <<= sh;
+    x |= t;
+    trail <<= 8;
+  }
+  x |= trail;
+  return x;
+}
+
+/*
+export fn tsub(reg u64 in len) -> reg u64 {reg u64 x; x = __read_sub_u64_trail(in, len,7); return x;}
+*/
+
+inline
+fn __read_below_rate(reg u64 in rate, inline int j) -> reg u64 {
+  inline int i;
+  reg u64 t;
+  i = __INV_P(j);
+  if (rate > 8*i) { // static check
+    t = [in + 8*i];
+  } else {
+    t = #set0();
+  }
+  return t;
+}
+
+
+inline
+fn __add_full_block_avx2(
+  reg u256[7] state,
+  reg u64 in inlen,
+  reg u64 rate //in bytes
+) -> reg u256[7], reg u64, reg u64
+{
+  inline int j;
+  reg u256 t256;
+  reg u64 l t0 t1 t2 t3;
+
+  t256 = #VPBROADCAST_4u64([in + 0]);
+  state[0] ^= t256;
+  for j = 0 to 6 {
+    t0 = __read_below_rate(in, rate, 4*j+0);
+    t1 = __read_below_rate(in, rate, 4*j+1);
+    t2 = __read_below_rate(in, rate, 4*j+2);
+    t3 = __read_below_rate(in, rate, 4*j+3);
+    t256 = __u64x4_u256(t0, t1, t2, t3);
+    state[j+1] ^= t256;
+  }
+
+  in += rate;
+  inlen -= rate;
+  return state, in, inlen;
+}
+
+ 
+
+
 inline fn __keccak_init_avx2() -> reg u256[7]
 {
   inline int i;
@@ -28,7 +286,7 @@ inline fn __init_s_state_avx2() -> stack u64[28]
 }
 
 
-inline fn __add_full_block_avx2(
+inline fn __add_full_block_avx2_old(
   reg u256[7] state,
   stack u64[28] s_state,
   reg ptr u64[25] a_jagged_p,
@@ -217,12 +475,13 @@ inline fn __absorb_avx2(
   reg ptr u64[25] a_jagged_p;
 
   a_jagged_p = KECCAK_A_JAGGED;
-  s_state = __init_s_state_avx2();
+//  s_state = __init_s_state_avx2();
 
   // intermediate blocks
   while ( inlen >= rate )
   {
-    state, s_state, in, inlen = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate);
+//    state, s_state, in, inlen = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate);
+    state, in, inlen = __add_full_block_avx2(state, in, inlen, rate);
     state = _keccakf1600_avx2_(state);
   }
 
