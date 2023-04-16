@@ -87,7 +87,7 @@ inline fn __array_7u256(reg u256[7] state) -> reg u256, reg u256, reg u256, reg 
 
 inline // keccak_f1600 round without "iota"
 fn __keccakf1600_pround_avx2( reg u256 st0r st1r st2r st3r st4r st5r st6r
-			    , reg u256[6] rhotates_left_p rhotates_right_p)
+			    , reg ptr u256[6] rhotates_left_p rhotates_right_p)
   -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256 {
   reg u256 t0 t1 t2 t3 t4 t5 t6 t7 t8;
   reg u256 c00 c14 d00 d14;
