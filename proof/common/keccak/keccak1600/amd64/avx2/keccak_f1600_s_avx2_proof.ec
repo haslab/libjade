@@ -16,7 +16,7 @@ require import Keccak_f1600_Spec_facts.
 require import Keccak_f1600_s_spec_proof.
 
 
-from JExtract require import Jextracted.
+from JExtract require import Keccakf1600.
 from JExtract require import Array6 Array7 Array9 WArray288 WArray768.
 
 import Ring.IntID.

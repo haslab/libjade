@@ -24,8 +24,7 @@ require export JWordList.
     A[x,y,z] = st[ x * (5*y)].[z]	, for 0 <= x,y < y, and 0 <= z < 64
 *)
 
-from JExtract require export Array5 Array24 Array25.
-
+require export Array5 Array24 Array25.
 
 type state = W64.t Array25.t.
 

@@ -20,7 +20,7 @@ require import Keccak_f1600_s_spec_proof.
 require import Keccak_f1600_s_ref1_proof.
 
 
-from JExtract require import Jextracted.
+from JExtract require import Keccakf1600.
 
 
 (** lemmata (move?) *)

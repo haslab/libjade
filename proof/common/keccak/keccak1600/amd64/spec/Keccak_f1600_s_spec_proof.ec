@@ -9,7 +9,7 @@ require import List Real Int IntDiv CoreMap.
 require import Keccak_f1600_Spec_facts.
 
 
-from JExtract require import Jextracted.
+from JExtract require import Keccakf1600_s.
 
 
 equiv rhotates_spec_eq _x _y:

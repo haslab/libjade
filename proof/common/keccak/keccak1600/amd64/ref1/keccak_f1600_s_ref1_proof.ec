@@ -10,7 +10,7 @@ require import Keccak_f1600_Spec_facts.
 require import Keccak_f1600_s_spec_proof.
 
 
-from JExtract require import Jextracted.
+from JExtract require import Keccakf1600_s.
 
 (** lemmata (move?) *)
 
