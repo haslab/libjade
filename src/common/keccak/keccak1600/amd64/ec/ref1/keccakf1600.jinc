@@ -4,4 +4,3 @@ from Jade require "common/keccak/keccak1600/amd64/ref1/keccakf1600.jinc"
 from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600.jinc" 
 from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc" 
 
-//jasminc to_ec_ref1.jinc -I Jade:$SRC -ec _keccakf1600_spec_ -ec __keccakf1600_ref -ec _keccakf1600_ref1_ -ec _keccakf1600_avx2_ -ec _keccakf1600_4x_avx2_ -oec jextracted.ec
